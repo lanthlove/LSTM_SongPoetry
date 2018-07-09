@@ -1,10 +1,10 @@
 # 训练一个写词机器人
 
 ## 主要内容  
-- [1.Word Embedding](#bptt)
+- [1.小作业BPTT](#bptt)
 - [2.Word Embedding](#wordemd)
-- [Train RNN](#train)
-- [Conclusion](#conclusion)
+- [3.Train RNN](#train)
+- [4.Conclusion](#conclusion)
 
 ## <span id="bptt">1.小作业BPTT<span>  
 具体内容见notebook [BPTT-test](BPTT-Test.ipynb)  
