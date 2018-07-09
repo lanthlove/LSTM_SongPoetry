@@ -9,7 +9,6 @@ import tensorflow as tf
 
 import utils
 from model import Model
-from utils import read_data
 
 from flags import parse_args
 FLAGS, unparsed = parse_args()
@@ -19,7 +18,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s', level=logging.DEBUG)
 
 
-vocabulary = read_data(FLAGS.text)
+vocabulary = utils.read_data(FLAGS.text)
 print('Data size', len(vocabulary))
 
 
@@ -31,7 +30,7 @@ with open(FLAGS.reverse_dictionary, encoding='utf-8') as inf:
 
 
 model = Model(learning_rate=FLAGS.learning_rate, batch_size=FLAGS.batch_size, num_steps=FLAGS.num_steps)
-model.build()
+model.build(FLAGS.embedding_npy)
 
 
 with tf.Session() as sess:
@@ -55,16 +54,19 @@ with tf.Session() as sess:
         state = sess.run(model.state_tensor)
         for dl in utils.get_train_data(vocabulary, batch_size=FLAGS.batch_size, num_steps=FLAGS.num_steps):
 
-            ##################
-            # Your Code here
-            ##################
-
+            X_batch = [utils.index_data(ch, dictionary) for ch in dl[0]]
+            Y_batch = [utils.index_data(ch, dictionary) for ch in dl[1]]
+            feed_dict = {model.X:X_batch, model.Y:Y_batch, model.state_tensor:state, model.keep_prob:FLAGS.keep_prob}
+            
             gs, _, state, l, summary_string = sess.run(
                 [model.global_step, model.optimizer, model.outputs_state_tensor, model.loss, model.merged_summary_op], feed_dict=feed_dict)
             summary_string_writer.add_summary(summary_string, gs)
 
-            if gs % 10 == 0:
+            if gs % 50 == 0:
                 logging.debug('step [{0}] loss [{1}]'.format(gs, l))
-                save_path = saver.save(sess, os.path.join(
-                    FLAGS.output_dir, "model.ckpt"), global_step=gs)
+            if gs % 500 == 0:
+                logging.debug('save model.ckpt @{0} '.format(gs))
+                save_path = saver.save(sess, os.path.join(FLAGS.output_dir, "model.ckpt"), global_step=gs)
+
+    save_path = saver.save(sess, os.path.join(FLAGS.output_dir, "model.ckpt"), global_step=gs)
     summary_string_writer.close()

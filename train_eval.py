@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
-
-
 from flags import parse_args
-
 
 if __name__ == '__main__':
     FLAGS, unparsed = parse_args()
@@ -14,7 +11,7 @@ if __name__ == '__main__':
     os.chdir(w_d)
 
     cmd = ""
-    for parm in ["output_dir", "text", "num_steps", "batch_size", "dictionary", "reverse_dictionary", "learning_rate"]:
+    for parm in ["output_dir", "text", "num_steps", "batch_size", "dictionary", "reverse_dictionary", "embedding_npy", "learning_rate", "keep_prob"]:
         try:
             cmd += ' --{0}={1}'.format(parm, getattr(FLAGS, parm))
         except:
@@ -22,13 +19,13 @@ if __name__ == '__main__':
 
     for i in range(30):
        # train 1 epoch
-        print('################    train    ################')
+        print('################    train @ epoch %d   ################' % i)
         p = os.popen('python ./train.py' + cmd)
         for l in p:
             print(l.strip())
 
         # eval
-        print('################    eval    ################')
+        print('################    eval @ epoch %d    ################' % i)
         p = os.popen('python ./sample.py' + cmd)
         for l in p:
             print(l.strip())

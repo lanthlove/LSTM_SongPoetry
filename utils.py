@@ -5,7 +5,9 @@ import collections
 import random
 
 import numpy as np
-
+import logging
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s', level=logging.DEBUG)
 
 def read_data(filename):
     with open(filename, encoding="utf-8") as f:
@@ -28,10 +30,25 @@ def index_data(sentences, dictionary):
 
 
 def get_train_data(vocabulary, batch_size, num_steps):
-    ##################
-    # Your Code here
-    ##################
-
+    raw_x = vocabulary
+    raw_y = vocabulary[1:]
+    raw_y.append('UNK') 
+    data_size = len(raw_x)
+    logging.debug('data_size = {0}'.format(data_size))
+    data_partition_size = data_size // batch_size
+    logging.debug('data_partition_size = {0}'.format(data_partition_size))
+    data_x = np.zeros([batch_size, data_partition_size], dtype=np.str)
+    data_y = np.zeros([batch_size, data_partition_size], dtype=np.str)
+    
+    for i in range(batch_size):
+        data_x[i] = raw_x[data_partition_size * i:data_partition_size * (i + 1)]
+        data_y[i] = raw_y[data_partition_size * i:data_partition_size * (i + 1)]
+    epoch_size = data_partition_size // num_steps
+    logging.debug('epoch_size = {0}'.format(epoch_size))
+    for i in range(epoch_size):
+        x = data_x[:, i * num_steps:(i + 1) * num_steps]
+        y = data_y[:, i * num_steps:(i + 1) * num_steps]
+        yield (x, y)
 
 def build_dataset(words, n_words):
     """Process raw inputs into a dataset."""
